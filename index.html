@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .success-icon {
+            font-size: 60px;
+            color: #4caf50;
+            margin-bottom: 20px;
+        }
+
+        .success-message h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .success-message p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .cert-info {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .cert-info p {
+            margin: 8px 0;
+            color: #333;
+        }
+
+        .cert-info strong {
+            color: #667eea;
+        }
+
+        .qr-info {
+            background: #e8f5e9;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #2e7d32;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            margin-bottom: 10px;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #999 0%, #777 100%);
+        }
+
+        .verify-section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .verify-section.show {
+            display: block;
+        }
+
+        .verify-card {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #667eea;
+        }
+
+        .verify-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .verify-card p {
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #4caf50;
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="formSection">
+            <h1>🎓 Certificate Generator</h1>
+            <form id="certificateForm">
+                <div class="form-group">
+                    <label for="name">Full Name *</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="course">Course Name *</label>
+                    <input type="text" id="course" required>
+                </div>
+                <div class="form-group">
+                    <label for="date">Completion Date *</label>
+                    <input type="date" id="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="grade">Grade/Score</label>
+                    <input type="text" id="grade" placeholder="Optional">
+                </div>
+                <button type="submit">Generate Certificate</button>
+            </form>
+        </div>
+
+        <div id="successSection" class="success-message">
+            <div class="success-icon">✓</div>
+            <h2>Certificate Ready!</h2>
+            <p>Your certificate has been generated with QR code.</p>
+            <div class="cert-info">
+                <p><strong>Certificate ID:</strong> <span id="certId"></span></p>
+                <p><strong>Name:</strong> <span id="certName"></span></p>
+                <p><strong>Course:</strong> <span id="certCourse"></span></p>
+            </div>
+            <div class="qr-info">
+                📱 <strong>QR Code Feature:</strong> Scan the QR code on your certificate to verify and download PDF!
+            </div>
+            <button class="download-btn" onclick="downloadCertificate()">Download Certificate (PNG)</button>
+            <button class="download-btn" onclick="downloadPDF()">Download Certificate (PDF)</button>
+            <button class="back-btn" onclick="resetForm()">Generate Another</button>
+        </div>
+
+        <div id="verifySection" class="verify-section">
+            <div class="success-icon">🔍</div>
+            <h2>Certificate Verified!</h2>
+            <div class="verify-card">
+                <div class="status-badge">✓ VERIFIED</div>
+                <h3>Certificate Details</h3>
+                <p><strong>ID:</strong> <span id="verifyCertId"></span></p>
+                <p><strong>Name:</strong> <span id="verifyName"></span></p>
+                <p><strong>Course:</strong> <span id="verifyCourse"></span></p>
+                <p><strong>Date:</strong> <span id="verifyDate"></span></p>
+                <p><strong>Grade:</strong> <span id="verifyGrade"></span></p>
+            </div>
+            <button class="download-btn" onclick="downloadVerifiedPDF()">Download PDF Certificate</button>
+            <button class="back-btn" onclick="backToHome()">Back to Home</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        let certificateData = {};
+        let certificateId = '';
+
+        // Check if URL has certificate verification data
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('cert')) {
+                try {
+                    const certData = JSON.parse(atob(urlParams.get('cert')));
+                    showVerification(certData);
+                } catch (e) {
+                    console.error('Invalid certificate data');
+                }
+            }
+        });
+
+        function generateCertificateId() {
+            return 'CERT-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        }
+
+        document.getElementById('certificateForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            certificateId = generateCertificateId();
+            
+            certificateData = {
+                id: certificateId,
+                name: document.getElementById('name').value,
+                course: document.getElementById('course').value,
+                date: document.getElementById('date').value,
+                grade: document.getElementById('grade').value || 'N/A'
+            };
+
+            document.getElementById('certId').textContent = certificateId;
+            document.getElementById('certName').textContent = certificateData.name;
+            document.getElementById('certCourse').textContent = certificateData.course;
+
+            document.getElementById('formSection').classList.add('hidden');
+            document.getElementById('successSection').classList.add('show');
+        });
+
+        function showVerification(certData) {
+            certificateData = certData;
+            document.getElementById('verifyCertId').textContent = certData.id;
+            document.getElementById('verifyName').textContent = certData.name;
+            document.getElementById('verifyCourse').textContent = certData.course;
+            
+            const dateObj = new Date(certData.date);
+            const formattedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('verifyDate').textContent = formattedDate;
+            document.getElementById('verifyGrade').textContent = certData.grade;
+
+            document.getElementById('formSection').classList.add('hidden');
+            document.getElementById('successSection').classList.remove('show');
+            document.getElementById('verifySection').classList.add('show');
+        }
+
+        function generateQRCode(text, size) {
+            return new Promise((resolve) => {
+                const container = document.createElement('div');
+                container.style.display = 'none';
+                document.body.appendChild(container);
+                
+                const qr = new QRCode(container, {
+                    text: text,
+                    width: size,
+                    height: size,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+
+                setTimeout(() => {
+                    const img = container.querySelector('img');
+                    const canvas = document.createElement('canvas');
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, size, size);
+                    document.body.removeChild(container);
+                    resolve(canvas);
+                }, 100);
+            });
+        }
+
+        async function drawCertificate(ctx, canvas) {
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#f8f9ff');
+            gradient.addColorStop(1, '#e8eeff');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Border
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 20;
+            ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
+
+            ctx.strokeStyle = '#764ba2';
+            ctx.lineWidth = 5;
+            ctx.strokeRect(60, 60, canvas.width - 120, canvas.height - 120);
+
+            // Decorative corners
+            ctx.fillStyle = '#667eea';
+            const cornerSize = 30;
+            [
+                [70, 70], [canvas.width - 70, 70],
+                [70, canvas.height - 70], [canvas.width - 70, canvas.height - 70]
+            ].forEach(([x, y]) => {
+                ctx.beginPath();
+                ctx.arc(x, y, cornerSize, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Title
+            ctx.fillStyle = '#667eea';
+            ctx.font = 'bold 60px serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('CERTIFICATE', canvas.width / 2, 150);
+
+            ctx.font = '30px serif';
+            ctx.fillStyle = '#764ba2';
+            ctx.fillText('OF ACHIEVEMENT', canvas.width / 2, 200);
+
+            // Main text
+            ctx.font = '28px sans-serif';
+            ctx.fillStyle = '#333';
+            ctx.fillText('This is to certify that', canvas.width / 2, 300);
+
+            // Name
+            ctx.font = 'bold 50px serif';
+            ctx.fillStyle = '#000';
+            ctx.fillText(certificateData.name, canvas.width / 2, 370);
+
+            // Name underline
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(200, 385);
+            ctx.lineTo(1000, 385);
+            ctx.stroke();
+
+            // Course completion text
+            ctx.font = '28px sans-serif';
+            ctx.fillStyle = '#333';
+            ctx.fillText('has successfully completed the course', canvas.width / 2, 460);
+
+            // Course name
+            ctx.font = 'bold 40px serif';
+            ctx.fillStyle = '#764ba2';
+            ctx.fillText(certificateData.course, canvas.width / 2, 530);
+
+            // Grade if provided
+            if (certificateData.grade && certificateData.grade !== 'N/A') {
+                ctx.font = '26px sans-serif';
+                ctx.fillStyle = '#333';
+                ctx.fillText(`with a grade of ${certificateData.grade}`, canvas.width / 2, 590);
+            }
+
+            // Date
+            ctx.font = '24px sans-serif';
+            ctx.fillStyle = '#666';
+            const dateObj = new Date(certificateData.date);
+            const formattedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            ctx.fillText(`Date: ${formattedDate}`, canvas.width / 2, 680);
+
+            // Certificate ID
+            ctx.font = '18px monospace';
+            ctx.fillStyle = '#999';
+            ctx.fillText(`Certificate ID: ${certificateData.id}`, canvas.width / 2, 720);
+
+            // Generate QR Code with verification URL
+            const baseUrl = window.location.origin + window.location.pathname;
+            const certDataEncoded = btoa(JSON.stringify(certificateData));
+            const verificationUrl = `${baseUrl}?cert=${certDataEncoded}`;
+            
+            const qrCanvas = await generateQRCode(verificationUrl, 120);
+            
+            // Draw QR code in bottom right corner
+            ctx.drawImage(qrCanvas, canvas.width - 180, canvas.height - 180, 120, 120);
+
+            // QR code label
+            ctx.font = '14px sans-serif';
+            ctx.fillStyle = '#666';
+            ctx.textAlign = 'center';
+            ctx.fillText('Scan to Verify', canvas.width - 120, canvas.height - 50);
+
+            // Signature line
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(200, 760);
+            ctx.lineTo(450, 760);
+            ctx.stroke();
+
+            ctx.font = '20px sans-serif';
+            ctx.fillStyle = '#666';
+            ctx.textAlign = 'center';
+            ctx.fillText('Authorized Signature', 325, 790);
+        }
+
+        async function downloadCertificate() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1200;
+            canvas.height = 850;
+            const ctx = canvas.getContext('2d');
+
+            await drawCertificate(ctx, canvas);
+
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Certificate_${certificateData.name.replace(/\s+/g, '_')}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        }
+
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 1200;
+            canvas.height = 850;
+            const ctx = canvas.getContext('2d');
+
+            await drawCertificate(ctx, canvas);
+
+            const imgData = canvas.toDataURL('image/png');
+            doc.addImage(imgData, 'PNG', 0, 0, 297, 210);
+            doc.save(`Certificate_${certificateData.name.replace(/\s+/g, '_')}.pdf`);
+        }
+
+        async function downloadVerifiedPDF() {
+            await downloadPDF();
+        }
+
+        function resetForm() {
+            document.getElementById('certificateForm').reset();
+            document.getElementById('successSection').classList.remove('show');
+            document.getElementById('formSection').classList.remove('hidden');
+            certificateData = {};
+            certificateId = '';
+        }
+
+        function backToHome() {
+            window.history.pushState({}, '', window.location.pathname);
+            document.getElementById('verifySection').classList.remove('show');
+            document.getElementById('formSection').classList.remove('hidden');
+            certificateData = {};
+        }
+    </script>
+</body>
+</html>

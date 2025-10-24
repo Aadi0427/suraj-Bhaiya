@@ -1,0 +1,6 @@
+# Ignore git metadata and common unwanted files in the image
+.git
+node_modules
+*.log
+*.tmp
+__pycache__
